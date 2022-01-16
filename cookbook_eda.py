@@ -197,7 +197,6 @@ def all_types_df(df: pd.DataFrame, dropna: bool = None) -> pd.DataFrame:
         return res
     if dropna == True:
         # change empty lists (no column name) into np.nan, and remove it
-        print(res.cols)
         return res.where(
             res.cols.apply(lambda s: len(s) != 0 if s is not np.nan else np.nan)
         ).dropna()
@@ -271,6 +270,10 @@ def enriched_describe(df: pd.DataFrame, dropna: bool = True) -> pd.DataFrame:
         .assign(count=lambda _df: _df.loc[:, "count"].astype(int))
         .fillna("-")
     )
+
+
+def subset(df: pd.DataFrame, lst: list, level="detailed_dtype"):
+    return pd.concat([df.xs(key=t, level=level, drop_level=False) for t in lst], axis=0)
 
 
 def main():
