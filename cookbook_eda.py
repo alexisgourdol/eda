@@ -38,8 +38,8 @@ def numeric_df(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.Series: with the following MultiIndex :
-        - level 0 (MAIN_TYPE): NUMERIC
-        - level 1 (detailed_dtype): number, int, int8, int16,
+        - level 0 (MAIN): NUMERIC
+        - level 1 (SUB): number, int, int8, int16,
         int32, int64, float, float16, float32, float64, Int64
     """
     # set up the index for the df
@@ -89,8 +89,8 @@ def obj_cat_df(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.Series: with the following MultiIndex :
-        - level 0 (MAIN_TYPE): OBJ / CAT
-        - level 1 (detailed_dtype): object, category
+        - level 0 (MAIN): OBJ / CAT
+        - level 1 (SUB): object, category
     """
 
     level_1 = np.array(["np object", "pd categorical"])
@@ -116,8 +116,8 @@ def boolean_df(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.Series: with the following MultiIndex :
-        - level 0 (MAIN_TYPE): BOOLEAN
-        - level 1 (detailed_dtype): bool, boolean
+        - level 0 (MAIN): BOOLEAN
+        - level 1 (SUB): bool, boolean
     """
     level_1 = np.array(["np bool", "pd boolean"])
     level_0 = np.full(level_1.shape[0], fill_value="BOOLEAN")
@@ -158,8 +158,8 @@ def time_df(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         pd.Series: with the following MultiIndex :
-        - level 0 (MAIN_TYPE): TIME
-        - level 1 (detailed_dtype): datetime, datetimetz, timedelta
+        - level 0 (MAIN): TIME
+        - level 1 (SUB): datetime, datetimetz, timedelta
     """
     level_1 = np.array(["np datetime", "pd datetimez", "np timedelta"])
     level_0 = np.full(level_1.shape[0], fill_value="TIME")
@@ -178,7 +178,7 @@ def time_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def all_types_df(df: pd.DataFrame, dropna: bool = None) -> pd.DataFrame:
     """
-    Returns a DataFrame that concatenates the MAIN_TYPES :
+    Returns a DataFrame that concatenates the MAIN data type:
 
     Args:
         df (pd.DataFrame): original pandas DataFrame
@@ -186,8 +186,8 @@ def all_types_df(df: pd.DataFrame, dropna: bool = None) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: with the following MultiIndex :
-        - level 0 (MAIN_TYPE): NUMERIC, OBJ / CAT, BOOLEAN, TIME
-        - level 1 (detailed_dtype): number, int, int8, int16,
+        - level 0 (MAIN): NUMERIC, OBJ / CAT, BOOLEAN, TIME
+        - level 1 (SUB): number, int, int8, int16,
         int32, int64, float, float16, float32, float64, Int64,
         object, category, bool, boolean, datetime, datetimetz, timedelta
 
@@ -258,7 +258,7 @@ def enriched_describe(df: pd.DataFrame, dropna: bool = True) -> pd.DataFrame:
             how="left",
         )
         .assign(nan_counts=lambda _df: _df.nan_counts.fillna(0).astype(int))
-        .rename_axis(["MAIN_TYPE", "detailed_dtype"])
+        .rename_axis(["MAIN", "SUB"])
         .set_index("cols", append=True)  # create a 3-level multi index
         .merge(  # merge with regular describe function
             df.describe(include="all").T.rename_axis("cols"),
@@ -272,7 +272,7 @@ def enriched_describe(df: pd.DataFrame, dropna: bool = True) -> pd.DataFrame:
     )
 
 
-def subset(df: pd.DataFrame, lst: list, level="detailed_dtype"):
+def subset(df: pd.DataFrame, lst: list, level="SUB"):
     return pd.concat([df.xs(key=t, level=level, drop_level=False) for t in lst], axis=0)
 
 
