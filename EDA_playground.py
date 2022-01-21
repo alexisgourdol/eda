@@ -10,10 +10,6 @@ import cookbook_eda as eda
 
 # <codecell>
 
-dir(cookbook_eda)
-
-# <codecell>
-
 file = 'penguins'
 df = sns.load_dataset(file); display(df.shape); df.head(3)
 

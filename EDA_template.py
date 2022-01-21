@@ -21,12 +21,29 @@
 
 # <markdowncell>
 
+# _______________
+
+# <markdowncell>
+
+# **Data cleaning and exploration notes:**
+# 
+
+
+# <markdowncell>
+
+# - Idea 1
+# - Idea 2
+# - Idea 3
+
+# <markdowncell>
+
 # ## Imports
 
 # <codecell>
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import seaborn as sns
 import cookbook_eda as eda
 from IPython.core.display import HTML
@@ -51,15 +68,96 @@ source = 'penguins'
 df = sns.load_dataset(source); print(f"shape: {df.shape}, memory: {df.memory_usage(deep=True).sum()}")
 df.sample(5)
 
+# <markdowncell>
+
+# ## Explore dtypes
+
 # <codecell>
 
-with pd.option_context("display.max_colwidth", 200):
-    display(eda.all_types_df(df))
+df.dtypes.rename("data_types").sort_values().to_frame().T
 
 # <codecell>
 
 eda_df = eda.enriched_describe(df)
 eda_df
+
+# <codecell>
+
+# remove duplicate outputs
+lst = ["np object", "np float"]
+eda.subset(eda_df, lst)
+
+# <markdowncell>
+
+# ## Explore distributions
+
+# <codecell>
+
+def hist_num_cols(df):
+    num_cols = {col for col in df.select_dtypes(include="number")}
+
+    custom_params = {
+        "axes.spines.left": False,
+        "axes.spines.right": False,
+        "axes.spines.bottom": True,
+        "axes.spines.top": True,
+        "axes.grid": False,
+    }
+    with sns.axes_style("whitegrid", rc=custom_params):
+
+        fig, axs = plt.subplots(nrows=len(num_cols), ncols=1, figsize=(12, 8))
+
+        for idx, col in enumerate(num_cols):
+            sns.histplot(x=df[col], data=df, ax=axs[idx], kde=True)
+            sns.rugplot(x=df[col], data=df, ax=axs[idx], c="black")
+            axs[idx].set_ylabel(col, rotation=0, labelpad=50)
+            
+hist_num_cols(df)
+
+# <codecell>
+
+def box_num_cols(df):
+    num_cols = {col for col in df.select_dtypes(include="number")}
+
+    custom_params = {
+        "axes.spines.left": False,
+        "axes.spines.right": False,
+        "axes.spines.bottom": True,
+        "axes.spines.top": True,
+        "axes.grid": False,
+    }
+    with sns.axes_style("whitegrid", rc=custom_params):
+
+        fig, axs = plt.subplots(nrows=len(num_cols), ncols=1, figsize=(12, 8))
+
+        for idx, col in enumerate(num_cols):
+            sns.boxplot(x=df[col], data=df, ax=axs[idx], color="white")
+            sns.stripplot(x=df[col], data=df, ax=axs[idx], alpha=0.6)
+            axs[idx].set_ylabel(col, rotation=0, labelpad=50)
+box_num_cols(df)
+
+# <codecell>
+
+def hist_cat_cols(df):
+    num_cols = {col for col in df.select_dtypes(exclude="number")}
+
+    custom_params = {
+        "axes.spines.left": False,
+        "axes.spines.right": False,
+        "axes.spines.bottom": True,
+        "axes.spines.top": True,
+        "axes.grid": False,
+    }
+    with sns.axes_style("whitegrid", rc=custom_params):
+
+        fig, axs = plt.subplots(nrows=len(num_cols), ncols=1, figsize=(12, 8))
+
+        for idx, col in enumerate(num_cols):
+            sns.histplot(x=df[col].fillna("NA"), data=df, ax=axs[idx])
+            axs[idx].set_ylabel(col, rotation=0, labelpad=50)
+            plt.tight_layout()
+
+hist_cat_cols(df)
 
 # <markdowncell>
 
@@ -82,44 +180,3 @@ eda_df
 # <markdowncell>
 
 # _______________
-
-# <codecell>
-
-lst = ["np object", "np float"]
-eda.subset(eda_df, lst)
-
-# <codecell>
-
-
-
-# <codecell>
-
-(
-    eda_df.assign(histogram_snippet=[f"img/hist_{col}.png"
-                                     for col in eda_df.index.get_level_values("cols")])
-        .pipe(lambda df: df.to_html(escape=False,
-                                    formatters=dict(histogram_snippet=path_to_image_html)
-                                   )
-             )
-)
-
-# <codecell>
-
-def path_to_image_html(path):
-    return '<img src="'+ path + '" width="120" >'
-
-# <codecell>
-
-def t():
-    return HTML(eda_df.to_html(escape=False, 
-           formatters=dict(histogram_snippet=path_to_image_html)
-          )
-    )
-
-# <codecell>
-
-t()
-
-# <codecell>
-
-
